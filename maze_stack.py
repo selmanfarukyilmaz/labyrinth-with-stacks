@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 Stack = []
-
+kordinat = []
 ROAD = " "
 WALL = "#"
 START = "o"
@@ -38,7 +38,7 @@ def change(text: str, char: str, index: int) -> str:
     return text[:index] + char + text[(index + 1):]
 
 
-def is_up_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
+def is_up_cell_empty(labyrinth: List[str], line: int, letter: int, search_char: str) -> bool:
     """
     Returns whether a path exists in the full parent directory of the current location
 
@@ -49,14 +49,14 @@ def is_up_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
     :return: True or False
     """
     if line > 0:  # üstü tara
-        if labyrinth[line - 1][letter] == ROAD:
+        if labyrinth[line - 1][letter] == search_char:
 
             return True
         else:
             return False
 
 
-def is_down_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
+def is_down_cell_empty(labyrinth: List[str], line: int, letter: int, search_char: str) -> bool:
     """
     Returns whether a path exists in the directory directly below the current location
 
@@ -67,13 +67,13 @@ def is_down_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
     :return: True or False
     """
     if line < len(labyrinth):  # altı tara
-        if labyrinth[line + 1][letter] == ROAD:
+        if labyrinth[line + 1][letter] == search_char:
             return True
         else:
             return False
 
 
-def is_left_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
+def is_left_cell_empty(labyrinth: List[str], line: int, letter: int, search_char: str) -> bool:
     """
     Returns whether there is a path in the directory just to the left of the current location
 
@@ -84,16 +84,17 @@ def is_left_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
     :return: True or False
     """
     if letter > 0:  # solu tara
-        if labyrinth[line][letter - 1] == ROAD:
+        if labyrinth[line][letter - 1] == search_char:
             return True
         else:
             return False
 
 
-def is_right_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
+def is_right_cell_empty(labyrinth: List[str], line: int, letter: int, search_char: str) -> bool:
     """
     Returns whether there is a path in the directory just to the right of the current location
 
+    :param search_char:
     :param labyrinth: list of string structures with the same number of elements of the list and the same number of
     elements of arrays, having at least one continuous path from beginning to end.
     :param line: List(line) index of current location
@@ -101,37 +102,44 @@ def is_right_cell_empty(labyrinth: List[str], line: int, letter: int) -> bool:
     :return: True or False
     """
     if letter < len(labyrinth[0]):  # sağı tara
-        if labyrinth[line][letter + 1] == ROAD:
+        if labyrinth[line][letter + 1] == search_char:
             return True
         else:
             return False
 
 
-def stack_next_steps_and_edit(labyrinth: List[str], line: int, letter: int):
+def stack_next_steps_and_edit(labyrinth: List[str], line: int, letter: int, edit_char: str, search_char: str):
     """
         Closes(updates) the index just above the current location
 
+        :param search_char:
+        :param edit_char:
         :param labyrinth: list of string structures with the same number of elements of the list and the same number of
         elements of arrays, having at least one continuous path from beginning to end.
         :param line: List(line) index of current location
         :param letter:String(letter) index of current location
         :return: Returns the index information of the character directly above the current position
         """
-    if is_up_cell_empty(labyrinth, line, letter):
-        labyrinth[line - 1] = change(labyrinth[line - 1], STEP, letter)
+    labyrinth[line] = change(labyrinth[line], edit_char, letter)
+
+    if is_up_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line - 1, letter))
+        return
 
-    if is_down_cell_empty(labyrinth, line, letter):
-        labyrinth[line + 1] = change(labyrinth[line + 1], STEP, letter)
+    if is_down_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line + 1, letter))
+        return
 
-    if is_left_cell_empty(labyrinth, line, letter):
-        labyrinth[line] = change(labyrinth[line], STEP, letter - 1)
+    if is_left_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line, letter - 1))
+        return
 
-    if is_right_cell_empty(labyrinth, line, letter):
-        labyrinth[line] = change(labyrinth[line], STEP, letter + 1)
+    if is_right_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line, letter + 1))
+        return
+
+
+
 
 
 def exit_check(labyrinth: List[str], line: int, letter: int) -> bool:
@@ -168,14 +176,19 @@ def exit_check(labyrinth: List[str], line: int, letter: int) -> bool:
 def runner(labyrinth: List[str], line=0, letter=0):
     while True:
         print(line, letter)
-        for i in range(len(labyrinth)):
-            print(labyrinth[i])
+
+        print_lab(labyrinth)
+        if stack_next_steps_and_edit(labyrinth, line, letter, STEP, ROAD) == True:
+            line, letter = Stack.pop()
 
         if exit_check(labyrinth, line, letter):
             return
-        stack_next_steps_and_edit(labyrinth, line, letter)
 
-        line, letter = Stack.pop()
+        if not Stack:
+            stack_next_steps_and_edit(labyrinth, line, letter, WALL, STEP)
+
+        if Stack:
+            line, letter = Stack.pop()
 
 
 def start(labyrinth: List[str]):
@@ -185,3 +198,9 @@ def start(labyrinth: List[str]):
     """
     Stack.append(start_index(labyrinth))
     runner(labyrinth, *Stack.pop())
+
+
+
+def print_lab(labyrinth):
+    for i in range(len(labyrinth)):
+        print(labyrinth[i])
