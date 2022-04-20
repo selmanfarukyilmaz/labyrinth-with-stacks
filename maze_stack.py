@@ -139,9 +139,6 @@ def stack_next_steps_and_edit(labyrinth: List[str], line: int, letter: int, edit
         return
 
 
-
-
-
 def exit_check(labyrinth: List[str], line: int, letter: int) -> bool:
     """
     It checks if there is an exit above the current location and if it finds exit, it prints the exit index
@@ -182,6 +179,8 @@ def runner(labyrinth: List[str], line=0, letter=0):
             line, letter = Stack.pop()
 
         if exit_check(labyrinth, line, letter):
+            labyrinth[line] = change(labyrinth[line], STEP, letter)
+            print_lab(labyrinth)
             return
 
         if not Stack:
@@ -198,7 +197,6 @@ def start(labyrinth: List[str]):
     """
     Stack.append(start_index(labyrinth))
     runner(labyrinth, *Stack.pop())
-
 
 
 def print_lab(labyrinth):
