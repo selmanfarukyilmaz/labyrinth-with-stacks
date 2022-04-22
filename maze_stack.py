@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
+road_index = []
 Stack = []
-kordinat = []
 ROAD = " "
 WALL = "#"
 START = "o"
@@ -21,6 +21,7 @@ def start_index(labyrinth: List[str]) -> Tuple[int, int]:
         for index_letter, letter in enumerate(line):
             if letter == f"{START}":
                 print(f"Start of this maze is {index_line}, {index_letter}")
+                road_index.append((index_line, index_letter))
                 return index_line, index_letter
 
     raise Exception("This labyrinth has no start")
@@ -124,18 +125,34 @@ def stack_next_steps_and_edit(labyrinth: List[str], line: int, letter: int, edit
 
     if is_up_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line - 1, letter))
+        if edit_char == STEP:
+            road_index.append((line - 1, letter))
+        if edit_char == WALL:
+            road_index.pop()
         return
 
     if is_down_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line + 1, letter))
+        if edit_char == STEP:
+            road_index.append((line + 1, letter))
+        if edit_char == WALL:
+            road_index.pop()
         return
 
     if is_left_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line, letter - 1))
+        if edit_char == STEP:
+            road_index.append((line, letter - 1))
+        if edit_char == WALL:
+            road_index.pop()
         return
 
     if is_right_cell_empty(labyrinth, line, letter, search_char):
         Stack.append((line, letter + 1))
+        if edit_char == STEP:
+            road_index.append((line, letter + 1))
+        if edit_char == WALL:
+            road_index.pop()
         return
 
 
@@ -175,12 +192,12 @@ def runner(labyrinth: List[str], line=0, letter=0):
         print(line, letter)
 
         print_lab(labyrinth)
-        if stack_next_steps_and_edit(labyrinth, line, letter, STEP, ROAD) == True:
-            line, letter = Stack.pop()
+        stack_next_steps_and_edit(labyrinth, line, letter, STEP, ROAD)
 
         if exit_check(labyrinth, line, letter):
             labyrinth[line] = change(labyrinth[line], STEP, letter)
             print_lab(labyrinth)
+            print(road_index)
             return
 
         if not Stack:
